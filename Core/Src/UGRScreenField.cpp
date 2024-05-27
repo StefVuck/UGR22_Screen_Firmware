@@ -35,7 +35,7 @@ void UGR_ScreenField::update(char *str) {
 			offset = str[i] - font.first;
 			cInfo = &(font.glyph[offset]);
 			uint8_t *fontChar = &(font.bitmap[cInfo->bitmapOffset]);
-			uint16_t fontColour = COLOR_ORANGE;
+			uint16_t fontColour = COLOR_RED;
 
 			//calculate width to nearest byte
 			int width = cInfo->width/ 8;
