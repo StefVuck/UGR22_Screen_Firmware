@@ -388,10 +388,13 @@ int main(void)
   HAL_Delay(1);
   while(HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
 
+
   UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "Water Temp", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField waterTempField = UGR_ScreenField(10, 40, "", FreeSans35pt7b, &screen);
+
   UGR_ScreenField cellTempTitleField = UGR_ScreenField(2, 140, "Cell Temp", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField cellTempField = UGR_ScreenField(10, 180, "", FreeSans35pt7b, &screen);
+
   UGR_ScreenField stateOfChargeTitleField = UGR_ScreenField(190, 0, "State of Charge", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField stateOfChargeField = UGR_ScreenField(195, 40, "", FreeSans35pt7b, &screen);
 
@@ -419,12 +422,31 @@ int main(void)
 
   while (1)
   {
+
+    // Please remember to implement this: Shutdown Logic for Overheating
+    // Called Function should make screen Red
+  if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
+   // shutdown();
+  }
+
+  // Color Conditionals
+  uint16_t waterTempColor = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
+                            (ecuData.waterTemp < 45) ? COLOR_ORANGE : 
+                                                       COLOR_RED;
+
+  uint16_t cellTempColor = (ecuData.cellTemp < 40) ? COLOR_WHITE : 
+                           (ecuData.cellTemp < 45) ? COLOR_ORANGE : 
+                                                     COLOR_RED;
+
+
     sprintf(tmp_str, "%d", ecuData.waterTemp);
-    waterTempField.update(tmp_str);
+    waterTempField.update(tmp_str, waterTempColor);
+
     sprintf(tmp_str, "%d", ecuData.cellTemp);
-    cellTempField.update(tmp_str);
+    cellTempField.update(tmp_str, cellTempColor)
+
     sprintf(tmp_str, "%d", ecuData.stateOfCharge);
-    stateOfChargeField.update(tmp_str);
+    stateOfChargeField.update(tmp_str, COLOR_WHITE);
 
     /* USER CODE END WHILE */
 
