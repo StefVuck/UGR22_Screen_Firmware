@@ -34,6 +34,7 @@
 #include "FreeSans35pt7b.h"
 #include "FreeMonoBold9pt7b.h"
 #include "FreeSerifBold18pt7b.h"
+#include "image_data.c"
 
 // Moved the address of the CAN packets to the top of the file
 #define CANADDRESS 0x2000
@@ -47,6 +48,7 @@ uint8_t buf[ILI9341_WIDTH*2];
 
 uint8_t col_ready = 0;
 uint8_t SPI_DMA_BUSY = 0;
+
 
 static struct {
   unsigned int 	 width;
@@ -280,6 +282,15 @@ void drawGrid(){
 		ILI9341_drawLine(h, 0, h, 239, COLOR_ORANGE);
 	}
 }
+
+/* Function to display the image at a specific location, primarily used for Logo */
+void display_image(uint32_t xpos, uint32_t ypos, const uint8_t* pixel_data, uint32_t width, uint32_t height) {
+  ILI9341_SetCursorPosition(xpos, ypos, xpos + width - 1, ypos + height - 1);
+  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+  HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)pixel_data, width * height * 2);  // For RGB565, each pixel is 2 bytes
+  while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -364,30 +375,18 @@ int main(void)
 
   //Convert stored image to usable format
   //fucking gimp is useless, this is the easiest way I can get gimp generated images to fucking work!
-  uint8_t c;
-  for(uint32_t i = 0; i < meme.height * meme.width * meme.bytes_per_pixel; i+=2){
-	  c = meme.pixel_data[i];
-	  meme.pixel_data[i] = meme.pixel_data[i+1];
-	  meme.pixel_data[i+1] = c;
-  }
+
+  // uint8_t c;
+  // for(uint32_t i = 0; i < meme.height * meme.width * meme.bytes_per_pixel; i+=2){
+	 //  c = meme.pixel_data[i];
+	 //  meme.pixel_data[i] = meme.pixel_data[i+1];
+	 //  meme.pixel_data[i+1] = c;
+  // }
 
 
   ILI9341_Fill(COLOR_BLACK);
-  uint32_t xpos = 0;
-  uint32_t ypos = 0;
-  ILI9341_SetCursorPosition(xpos, ypos, xpos + meme.width - 1,  ypos + meme.height - 1);
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-  HAL_SPI_Transmit_DMA(&hspi1, meme.pixel_data, meme.height * meme.width * meme.bytes_per_pixel);
-
-  while(HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-
-  ILI9341_SetCursorPosition(ILI9341_HEIGHT - meme.width, ILI9341_WIDTH - meme.height, ILI9341_HEIGHT - 1,  ILI9341_WIDTH - 1);
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-  HAL_SPI_Transmit_DMA(&hspi1, meme.pixel_data, meme.height * meme.width * meme.bytes_per_pixel);
-
-  HAL_Delay(1);
-  while(HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-
+ 
+  display_image(190, 140, logo.pixel_data, logo.width, logo.height);
 
   UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "Water Temp", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField waterTempField = UGR_ScreenField(10, 40, "", FreeSans35pt7b, &screen);
@@ -425,28 +424,31 @@ int main(void)
 
     // Please remember to implement this: Shutdown Logic for Overheating
     // Called Function should make screen Red
-  if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
-   // shutdown();
-  }
+    if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
+     // shutdown();
+    }
 
-  // Color Conditionals
-  uint16_t waterTempColor = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
-                            (ecuData.waterTemp < 45) ? COLOR_ORANGE : 
+    // Color Conditionals
+    uint16_t waterTempColour = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
+                              (ecuData.waterTemp < 45) ? COLOR_ORANGE : 
+                                                         COLOR_RED;
+    waterTempField.setColour(waterTempColour);
+
+
+    uint16_t cellTempColour = (ecuData.cellTemp < 40) ? COLOR_WHITE : 
+                             (ecuData.cellTemp < 45) ? COLOR_ORANGE : 
                                                        COLOR_RED;
-
-  uint16_t cellTempColor = (ecuData.cellTemp < 40) ? COLOR_WHITE : 
-                           (ecuData.cellTemp < 45) ? COLOR_ORANGE : 
-                                                     COLOR_RED;
+    cellTempField.setColour(cellTempColour);
 
 
     sprintf(tmp_str, "%d", ecuData.waterTemp);
-    waterTempField.update(tmp_str, waterTempColor);
+    waterTempField.update(tmp_str);
 
     sprintf(tmp_str, "%d", ecuData.cellTemp);
-    cellTempField.update(tmp_str, cellTempColor)
+    cellTempField.update(tmp_str);
 
     sprintf(tmp_str, "%d", ecuData.stateOfCharge);
-    stateOfChargeField.update(tmp_str, COLOR_WHITE);
+    stateOfChargeField.update(tmp_str);
 
     /* USER CODE END WHILE */
 

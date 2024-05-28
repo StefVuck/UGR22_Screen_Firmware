@@ -21,7 +21,7 @@ UGR_ScreenField::~UGR_ScreenField() {
 	free(this->currentString);
 }
 
-void UGR_ScreenField::update(char *str, uint16_t color) {
+void UGR_ScreenField::update(char *str) {
 	//Write new string
 	uint16_t localStartX = this->startx;
 	uint16_t localStartY = this->starty;
@@ -35,7 +35,7 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 			offset = str[i] - font.first;
 			cInfo = &(font.glyph[offset]);
 			uint8_t *fontChar = &(font.bitmap[cInfo->bitmapOffset]);
-			uint16_t fontColour = color;
+			uint16_t fontColour = colour;
 
 			//calculate width to nearest byte
 			int width = cInfo->width/ 8;
