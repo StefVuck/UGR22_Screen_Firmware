@@ -3,6 +3,9 @@
  *
  *  Created on: 16 Nov 2021
  *      Author: camer
+ *
+ *  Last Changes: 28 May 2024
+ *  	Author: Stefan Vuckovic
  */
 
 #include "UGRScreenField.h"
