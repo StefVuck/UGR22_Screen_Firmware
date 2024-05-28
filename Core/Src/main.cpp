@@ -160,6 +160,12 @@ void decompress_rle(const uint8_t* compressed_data, uint16_t* decompressed_data,
     }
 }
 
+/**
+  * @brief Driver Function for Drawing Predefined Logo from Given Position
+  * @retval void
+  * Last Edited: 28 May 2024, Stefan
+  */
+
 void display_logo(uint32_t xpos, uint32_t ypos) {
     uint16_t* decompressed_data = (uint16_t*)malloc(image_width * image_height * sizeof(uint16_t));
     decompress_rle(compressed_data, decompressed_data, sizeof(compressed_data));
@@ -167,9 +173,10 @@ void display_logo(uint32_t xpos, uint32_t ypos) {
     ILI9341_SetCursorPosition(xpos, ypos, xpos + image_width - 1, ypos + image_height - 1);
     HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
     HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)decompressed_data, image_width * image_height * 2);  // For RGB565, each pixel is 2 bytes
-    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
 
-    free(decompressed_data);
+    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);  // Wait for the SPI
+
+    free(decompressed_data); // Memory Cleanup
 }
 
 
