@@ -1,0 +1,16 @@
+../Core/Src/S25FL.cpp:18:1:S25FL::S25FL(SPI_HandleTypeDef*, GPIO_TypeDef*, uint16_t)	1
+../Core/Src/S25FL.cpp:27:1:S25FL::S25FL()	1
+../Core/Src/S25FL.cpp:31:1:S25FL::~S25FL()	1
+../Core/Src/S25FL.cpp:31:1:virtual S25FL::~S25FL()	1
+../Core/Src/S25FL.cpp:39:5:int S25FL::begin()	5
+../Core/Src/S25FL.cpp:58:6:void S25FL::reset()	1
+../Core/Src/S25FL.cpp:69:6:void S25FL::transfer(uint8_t*, uint8_t*, uint32_t)	3
+../Core/Src/S25FL.cpp:80:9:uint8_t S25FL::transfer(uint8_t)	3
+../Core/Src/S25FL.cpp:91:6:void S25FL::write_disable()	1
+../Core/Src/S25FL.cpp:99:6:void S25FL::write_enable()	1
+../Core/Src/S25FL.cpp:107:6:char S25FL::check_WIP()	1
+../Core/Src/S25FL.cpp:117:6:void S25FL::block_WIP()	2
+../Core/Src/S25FL.cpp:127:6:void S25FL::read(uint32_t, uint8_t*, uint32_t)	1
+../Core/Src/S25FL.cpp:144:6:void S25FL::program(uint32_t, uint8_t*, uint32_t)	1
+../Core/Src/S25FL.cpp:160:6:void S25FL::sector_erase(uint32_t)	1
+../Core/Src/S25FL.cpp:171:6:void S25FL::bulk_erase()	1

@@ -28,16 +28,13 @@
 #include "S25FL.h"
 #include "UGRScreen.h"
 #include "UGRScreenField.h"
-#include "Vladimir24pt.h"
-#include "FreeSans20pt7b.h"
-#include "FreeSans10pt7b.h"
 #include "FreeSans35pt7b.h"
-#include "FreeMonoBold9pt7b.h"
 #include "FreeSerifBold18pt7b.h"
+#include "logo.c"
 
-// Moved the address of the CAN packets to the top of the file
-#define CANADDRESS 0x2000
 
+#define CANID 0x2000
+#define BACKING_COLOUR COLOR_BLACK // Not Linked to UGRScreenField Define
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,140 +45,8 @@ uint8_t buf[ILI9341_WIDTH*2];
 uint8_t col_ready = 0;
 uint8_t SPI_DMA_BUSY = 0;
 
-static struct {
-  unsigned int 	 width;
-  unsigned int 	 height;
-  unsigned int 	 bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
-  unsigned char	 pixel_data[40 * 30 * 2 + 1];
-} meme = {
-  40, 30, 2,
-  "\206I\246Y\346a\346a$\061\003)\004\061$\071\205I\205I\346YGjgr\310\212\250\202\310"
-  "\212g\202'j\305Y\006z\314\323\312\343\353\343\014\344J\313Gz#\071\003)#)#)\003)\343"
-  "\040\342\030\303\030\343\030\343\040\245Y\252\303+\334\013\334\205I\206Q\306Q\003"
-  "\061\343($\071\205I\347a'rGrGrGzgz\247\202\207\202\207\202FzFzGz\345i\310\242"
-  "J\313\252\343\313\333g\202\204I\244I'b\245Q\245I\204A\245I\346Y\245Q\342"
-  "\060\303\040\343(&r\014\314\013\334eAEA\004\061\003)E\071\306Y\346a\346a\306a\305Y"
-  "\305Y\305Y\305Y\345a\006j\006j\006b\006jGzgz\006r\250\232)\273\350\242\006j\247\202f"
-  "z\345a\204IDAC\071$A\205Q&r\310\222Gr$A\003\071\250\222\313\323eI\004\071$\071eA"
-  "\246Q\246Y\245Y\245Y\205Q\205I\204QdIDIdI\245Q\205Q\204I\245Y\006jgzGr&r\310"
-  "\232\351\232\250\212\250\212gz\006b\245QCA$A\004\071$\071#A\204ag\212\250\222\006"
-  "jcQJ\263EAD\071\205I\205Q\205Q\205Q\205I\204I\245Q\245Q\245QdIdIDIDICACA\204"
-  "I\245Q\006jhz&rg\202\310\212\310\212gzgrFj&j\305a\204QdICA#\071$AeQ\346qG\202"
-  "\245a\351\222eAeIeIeIeIDAeI\246YGr*\223\253\253\354\253\253\233gr\204IC\071"
-  "D\071DA\204I\305Y&jfz\207\202\250\212\247\202Fr\247\202\211\253l\314.\335"
-  "o\335\215\304)\233\305adIdI\244Q\006rgz\011\213\205AeADAD\071$\061\003\061D\071\205"
-  "AGb\210r\310z\011\203j\213\213\213Gb#\071\003\061#\071dA\244I\345Y&r\207\202\350"
-  "\212\247\202\207\202\212\263,\324L\314\315\274/\275\256\264\313\253*\223"
-  "\305YDA\205I\306a'j\251r\003!$!e\061\343\040\343\040\003!\343\040\003)$)D)$)\004!\003)"
-  "\343\040\343\040\303\040\343(#\061d\071\245I\345Q\346ah\202\011\223\207\202\006j"
-  "\245Q\003\071\004\061\303\040\343\040\003!\003!\003!\343\030\344\030\004!\303\030\303\040\343"
-  "\040\004)\004!\004\031\004)\205\071\347Q\347Y\010b\007Z\306I\206\071HJ\205\061\305\071\204"
-  "\061$)\003)\343\040\343\040\204\061\210JhJ\251ZGZ\003)\003!D\061d\061D)d\061\245\071\245"
-  "I'b\250rGb\245A$!\003!\343\030\302\030eI\205A\343\040$)$\061D\071E\071\205A\003)\343"
-  "\040\303\030\306\061\306\061\253{\314\203\352b\245A\205A\205\071\006R\207r\310\212"
-  "\247z&RD)\246\071\205\061\343\030\343\030\343\030iJ\305\071\210R&J\345A\246AD\061"
-  "\003!\306A\206\071\307Y\347Ye\071\346A\246IfA\206I\347Y\346Q\007Zhr\210r\350\202"
-  "\314\253\313\253\014\264\313\243Gb\210b\350\202I\253\013\324L\324\254\233g"
-  "b\313\243\011\213\250\202+\213+\203\311r\012{*{k{\213\203\012shZ\005Z\314\253"
-  "\245A\347Q\306Q\306I\306I\306Y\346a\006b\346a\007jgz\250\212I\243,\324\315\344"
-  "\015\335\015\325\016\325\310r\210rj\263\013\324.\355\016\345\254\233\250jo\355"
-  "\015\345+\304\212\263\350\232\010\233\350\222\011\223\310\212\206z\350z\212"
-  "\233\252\243\215\314\310rj\233hr\214\223'j\213\263j\303J\263\011\253J\273"
-  "\313\313,\324\215\344\315\344\355\344\314\334\214\334m\314\245IFj\353\323"
-  "\214\344\217\355\217\355gj\245\071\014\304l\344\316\354\016\355.\355.\345\015"
-  "\335\254\314\354\324m\315\216\325n\325K\264o\325I{,\344\314\303K\243*\213"
-  "\354\303l\354l\354l\354\215\354,\344\313\323\253\303\212\263j\263\010\253"
-  "\250\222\006j\205\071\210z\252\323\312\333l\354\255\354\212\253\306A\347YG\202"
-  "g\222\011\253\313\303l\334\315\344\254\344\355\334\014\325\014\315\015\315\312"
-  "\243\352\233l\244\351\272\012\303k\313\312\242\346i\213\253,\324m\334L\334"
-  "\212\303\011\253\210\212hrGr\345Y\204A\305Q\006j\210\222\351\262\253\323m\354"
-  "\255\344\255\334\313\273\012\223\245I\245I\346a\006rg\212\247\242)\273\212\303"
-  "\313\313\313\313)\233gr\253\243l\314(\222H\232H\232\210\232\251\232'r\346"
-  "a\306Y\346Y\346a\306Y\346Y\306Q\305Q\245I$I\246a\305i\305ag\202*\273,\334"
-  "\317\344m\344\013\354\015\344\351\232dADAdA\204I\245Q\305Y\006jGzgzI\233\313"
-  "\303\353\313\352\313\306q\346y\007z\007z\347q\306i\205YdQDI$A$A$A#ADA#\071\343"
-  "\070$ADIdI\346aG\212\210\232\351\252\011\263\011\273\254\313\352\242#A\004\071"
-  "\003\071\003\071\003\071$AdI\346af\202(\253\211\303\251\313\252\323\205Y\205a\246"
-  "i\306i\306a\306aDI#\071$\071$\071\004\061$\071\245I\246I\003\061$\061$A\004\071\004\071#A"
-  "DQ\306i\007z\007r\245Y#I\351\202\306Q\343(\003\061#\071#\071\003\071\003\071#A\245Q\006r\247"
-  "\232I\303j\323EQeY\245a\347q\007j\346a$\071\003)\004)\343\040\303\030\343\040\343\040"
-  "\343\040\302\030\303\030\302\030\303\030\343\040\343(\003\061\003\061\343(\343(\003)\205"
-  "AGjgjD\061\343\040\342\040$\071$\071$\071\003\071#A\205YFr\247\232\011\273DQeQ\245"
-  "a\007r'r\205I\003)\303\030\303\030\303\030\303\030\343\030\303\030\303\030\302\030\303"
-  "\030\303\030\303\020\303\030\303\030\303\030\303\030\343\030\343\040D\071\205I\245"
-  "I\305Q\245I\205AD\071\302\040\343\040D\071$A$ADI\305aFzf\212DIdQ\306iGz\007b\003"
-  "\061\302\030\303\030\343\030\003!D)$)\004)\004)\343\040\003!\343\040\303\040\242\040\242"
-  "\030\303\030\343\040e\071\306Q\205I\244I\006Z\245AD\061d\071#)\343\030\303\030\003)D"
-  "A$A#AdQ\005j&zDIdQ\306iH\202\246Q\003!\343\040\004)\004\061\004\061e\071\206\071\206\071"
-  "\246\071\246\071\205\061\306AD\061\246\071e\071D\061\245A\245AGZ\351rM\234M\244"
-  ".\224e\061\303\030\303\030\303\040\303\030\303\040\004\071$\071$ADI\305a\346iDIeQ\346"
-  "ihz\245Q$\061$)d\071D\071\004\061\344\060\004\061D\061e\071e\061\205\071\306\071\306\071"
-  "\306\071\306A\007J\210R\311b,s\012k)s\350jhR\343\040\342\040\343\040\344\040\303"
-  "\030\303\040\004\061#\071#\071DI\205Y\205aEIeQ&r\010\243-\314\250\212\351\202*\223"
-  "\012\213$\071\004\061\344\060\343\060\343($)\205\061\205\061\205\061\306A\211Z\351"
-  "jj{\253\213\013\224\256\254\216\254P\315\314\263\352\272\311\232\342\070\343"
-  "\040\302\040\343\040\343(\003\061#\071dI\205YdQeI\245Y\250\222\014\324\215\354L\324"
-  "\207\212gzj\243\305Q$\061$\061\003\061\343\060\343\060$A\007j\007j\311r\213\203k\203"
-  "\216\254\014\244\017\305\316\314L\314\213\323J\343j\333\312\313J\243&b&bFb"
-  "CA$I\245Y\345a\245YdQEI\245QG\202\313\313\212\303\014\314j\243&j\250\212\254"
-  "\253\250rDA\003\061#\061#\071DQ&\202\310\252*\303*\303)\303*\313j\323\253\333"
-  "\213\343J\343\351\322\011\273\013\314l\334I\233\345Y%r\313\273j\253\310\212"
-  "Fr\006j\245Y\245QD\071eA\205Y\210\212\351\232\250\222\011\233\006bgrI\243j\253"
-  "j\243J\243J\233\210z\305YDI#I#Q\205i&zG\212h\212G\202\346q\006r)\233l\314\254"
-  "\334L\324\207z\305Q\350\212\013\304\312\273)\233Fr\345Y\305QFbD\071D\071DA\205"
-  "Q(r\007j\006b\245Q\346Qgr\310\212j\253J\263\213\263\212\273J\263J\253\011\243"
-  ")\253\011\243)\243I\253j\253\313\273\353\303\013\324+\324l\334,\324\350\222"
-  "\204I\204Ij\243\013\304\212\253\207zFb%ZFZ\352jD\071D\071D\071DA\205I\346Q\245"
-  "A\245Ad\071eA\305Y\250\202\250\212\012\243*\253k\273I\253j\263I\273I\303\211"
-  "\313\353\323\013\334\013\334\013\324,\344\352\323\353\313k\253\006b\205A\207r"
-  "\353\273\212\243\350\202fjFj&Z\305Q\261\254D\071D\071D\071d\071dA\205Ad\071#)"
-  "\003)\003)\245I\346Y'j\250\202\311\212\012\243\010\233)\253\011\253\351\242\011\253"
-  "j\273I\263\212\303j\303\212\313\252\303\350\232\305YC\071$\061\010\213i\233"
-  "\350\202\207jfb%Z\204I\205a\245y",
-};
-
-unsigned char black[40 * 30 * 2 + 1];
-
 struct DTA_CAN_Data {
-	int16_t RPM = 0;
-	int16_t TPS = 0;
-	int16_t wTemp = 0;
-	int16_t aTemp = 0;
-	int16_t mapKpa = 0;
-	int16_t lambdax1000 = 0;
-	int16_t KPHx10 = 0;
-	int16_t oKpa = 0;
-	int16_t fuelKpa = 0;
-	int16_t oTemp = 0;
-	int16_t voltsx10 = 0;
-	int16_t fuelConL_100kmx10 = 0;
-	int16_t gear = 0;
-	int16_t advanceDegx10 = 0;
-	int16_t injectionMsx100 = 0;
-	int16_t fuelConL_Hrx10 = 0;
-	int16_t ana1mV = 0;
-	int16_t ana2mV = 0;
-	int16_t ana3mV = 0;
-	int16_t camAdvx10 = 0;
-	int16_t camTargx10 = 0;
-	int16_t camPWMx10 = 0;
-	int16_t crankErr = 0;
-	int16_t camErr = 0;
-	int16_t cam2advx10 = 0;
-	int16_t cam2Targx10 = 0;
-	int16_t cam2PWMx10 = 0;
-	int16_t extern5V = 0;
-	int16_t injDutyCyc = 0;
-	int16_t lambdaPIDTarg = 0;
-	int16_t lambdaPIDAdj = 0;
-	int16_t ecuSwitches = 0;
-	int16_t rdSpeed = 0;
-	int16_t rudSpeed = 0;
-	int16_t ldSpeed = 0;
-	int16_t ludSpeed = 0;
-	int16_t rightLambda = 0;
-
-  // New Fields
+  // Massively Simplified
   int16_t waterTemp = 0;  
   int16_t cellTemp = 0;  
   int16_t stateOfCharge = 0;
@@ -243,7 +108,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &pRxHeader, rxData);
 	//When in filter list mode, can hearders have no info for some reason, other than what item of the list they met, so looking for ID doesnt work
 
-  if(pRxHeader.ExtId == CANADDRESS){
+  // CAN HANDLER
+  if(pRxHeader.ExtId == CANID){
     ecuData.waterTemp = rxData[1] << 8 | rxData[0];
     ecuData.cellTemp = rxData[3] << 8 | rxData[2];
     ecuData.stateOfCharge = rxData[5] << 8 | rxData[4];
@@ -273,13 +139,40 @@ S25FL flash;
 CAN_FilterTypeDef sFilterConfig; //declare CAN filter structure
 
 void drawGrid(){
-	for(int w = 20; w < 240; w+= 20){
-		ILI9341_drawLine(0, w, 319, w, COLOR_ORANGE);
+	for(int w = 20; w < 240; w+= 80){
+		ILI9341_drawLine(0, w, 319, w, COLOR_RED);
 	}
-	for(int h = 20; h < 320; h+= 20){
-		ILI9341_drawLine(h, 0, h, 239, COLOR_ORANGE);
+	for(int h = 20; h < 320; h+= 80){
+		ILI9341_drawLine(h, 0, h, 239, COLOR_RED);
 	}
 }
+
+void decompress_rle(const uint8_t* compressed_data, uint16_t* decompressed_data, uint32_t compressed_size) {
+    uint32_t index = 0;
+    uint32_t decompressed_index = 0;
+    while (index < compressed_size) {
+        uint16_t value = (compressed_data[index] << 8) | compressed_data[index + 1];
+        uint16_t count = (compressed_data[index + 2] << 8) | compressed_data[index + 3];
+        for (uint16_t i = 0; i < count; ++i) {
+            decompressed_data[decompressed_index++] = value;
+        }
+        index += 4;
+    }
+}
+
+void display_logo(uint32_t xpos, uint32_t ypos) {
+    uint16_t* decompressed_data = (uint16_t*)malloc(image_width * image_height * sizeof(uint16_t));
+    decompress_rle(compressed_data, decompressed_data, sizeof(compressed_data));
+
+    ILI9341_SetCursorPosition(xpos, ypos, xpos + image_width - 1, ypos + image_height - 1);
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+    HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)decompressed_data, image_width * image_height * 2);  // For RGB565, each pixel is 2 bytes
+    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+
+    free(decompressed_data);
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -362,91 +255,64 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  //Convert stored image to usable format
-  //fucking gimp is useless, this is the easiest way I can get gimp generated images to fucking work!
-  uint8_t c;
-  for(uint32_t i = 0; i < meme.height * meme.width * meme.bytes_per_pixel; i+=2){
-	  c = meme.pixel_data[i];
-	  meme.pixel_data[i] = meme.pixel_data[i+1];
-	  meme.pixel_data[i+1] = c;
-  }
+  // Essentially chooses what our background colour is
+  ILI9341_Fill(BACKING_COLOUR);
+ 
+  display_logo(150,150); // 320 max width - 170 Logo width, 150 is picked arbitrarily based on what looked good
 
 
-  ILI9341_Fill(COLOR_BLACK);
-  uint32_t xpos = 0;
-  uint32_t ypos = 0;
-  ILI9341_SetCursorPosition(xpos, ypos, xpos + meme.width - 1,  ypos + meme.height - 1);
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-  HAL_SPI_Transmit_DMA(&hspi1, meme.pixel_data, meme.height * meme.width * meme.bytes_per_pixel);
 
-  while(HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-
-  ILI9341_SetCursorPosition(ILI9341_HEIGHT - meme.width, ILI9341_WIDTH - meme.height, ILI9341_HEIGHT - 1,  ILI9341_WIDTH - 1);
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-  HAL_SPI_Transmit_DMA(&hspi1, meme.pixel_data, meme.height * meme.width * meme.bytes_per_pixel);
-
-  HAL_Delay(1);
-  while(HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-
-
-  UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "Water Temp", FreeSerifBold18pt7b, &screen);
+  // Initialising and Setting Screen Fields across the Display
+  UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "WATER T", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField waterTempField = UGR_ScreenField(10, 40, "", FreeSans35pt7b, &screen);
 
-  UGR_ScreenField cellTempTitleField = UGR_ScreenField(2, 140, "Cell Temp", FreeSerifBold18pt7b, &screen);
+  UGR_ScreenField cellTempTitleField = UGR_ScreenField(2, 140, "CELL T", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField cellTempField = UGR_ScreenField(10, 180, "", FreeSans35pt7b, &screen);
 
-  UGR_ScreenField stateOfChargeTitleField = UGR_ScreenField(190, 0, "State of Charge", FreeSerifBold18pt7b, &screen);
+  UGR_ScreenField stateOfChargeTitleField = UGR_ScreenField(190, 0, "SoC %", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField stateOfChargeField = UGR_ScreenField(195, 40, "", FreeSans35pt7b, &screen);
+  stateOfChargeField.setColour(COLOR_WHITE);
 
-
-  int can_mph = 0;
-  int can_gear = 0;
+  // Used like a buffer for data writing into screens
   char tmp_str[9];
 
-//  drawGrid();
-
-  //for fit testing of fields while CAN is disconnected
-  ecuData.RPM = 12000;
-  ecuData.KPHx10 = 1200;
-  ecuData.oTemp = 112;
-  ecuData.oKpa = 650;
-  ecuData.voltsx10 = 135;
-  ecuData.wTemp = 101;
-  ecuData.TPS = 100;
-  ecuData.gear = 5;
-
-  // New Data
-  ecuData.waterTemp = 95;
-  ecuData.cellTemp = 45;
+  // Temp Data
+  ecuData.waterTemp = 52;
+  ecuData.cellTemp = 30;
   ecuData.stateOfCharge = 85;
 
   while (1)
   {
 
-    // Please remember to implement this: Shutdown Logic for Overheating
-    // Called Function should make screen Red
-  if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
-   // shutdown();
-  }
+	 // Shutdown Functionality
+    if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
+       drawGrid();
+       ILI9341_Fill(COLOR_RED); // This doesnt work as intended without drawing the grid before
+       	   	   	   	   	   	   	// I don't know why
+       HAL_Delay(20000);        // 20s freeze, means we don't need to restart screen post shutdown
+    }
 
-  // Color Conditionals
-  uint16_t waterTempColor = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
-                            (ecuData.waterTemp < 45) ? COLOR_ORANGE : 
+
+    uint16_t waterTempColour = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
+                              (ecuData.waterTemp < 45) ? COLOR_ORANGE : 
+                                                         COLOR_RED;
+    waterTempField.setColour(waterTempColour);
+
+
+    uint16_t cellTempColour = (ecuData.cellTemp < 40) ? COLOR_WHITE : 
+                             (ecuData.cellTemp < 45) ? COLOR_ORANGE : 
                                                        COLOR_RED;
-
-  uint16_t cellTempColor = (ecuData.cellTemp < 40) ? COLOR_WHITE : 
-                           (ecuData.cellTemp < 45) ? COLOR_ORANGE : 
-                                                     COLOR_RED;
+    cellTempField.setColour(cellTempColour);
 
 
     sprintf(tmp_str, "%d", ecuData.waterTemp);
-    waterTempField.update(tmp_str, waterTempColor);
+    waterTempField.update(tmp_str);
 
     sprintf(tmp_str, "%d", ecuData.cellTemp);
-    cellTempField.update(tmp_str, cellTempColor)
+    cellTempField.update(tmp_str);
 
     sprintf(tmp_str, "%d", ecuData.stateOfCharge);
-    stateOfChargeField.update(tmp_str, COLOR_WHITE);
+    stateOfChargeField.update(tmp_str);
 
     /* USER CODE END WHILE */
 

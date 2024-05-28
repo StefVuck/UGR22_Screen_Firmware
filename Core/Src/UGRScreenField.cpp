@@ -6,12 +6,14 @@
  */
 
 #include "UGRScreenField.h"
+#define BACKING_COLOUR COLOR_BLACK
 
 UGR_ScreenField::UGR_ScreenField(int startx, int starty, char *str, GFXfont font, UGR_Screen *screen) {
 	this->startx = startx;
 	this->starty = starty;
 	this->font	= font;
 	this->screen = screen;
+	this->colour = COLOR_CYAN;
 	this->currentString = (char*)malloc(33); //TODO allow different sizes
 	memset(currentString, '\0', 33);
 	this->update(str);
@@ -21,7 +23,7 @@ UGR_ScreenField::~UGR_ScreenField() {
 	free(this->currentString);
 }
 
-void UGR_ScreenField::update(char *str, uint16_t color) {
+void UGR_ScreenField::update(char *str) {
 	//Write new string
 	uint16_t localStartX = this->startx;
 	uint16_t localStartY = this->starty;
@@ -35,7 +37,7 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 			offset = str[i] - font.first;
 			cInfo = &(font.glyph[offset]);
 			uint8_t *fontChar = &(font.bitmap[cInfo->bitmapOffset]);
-			uint16_t fontColour = color;
+			uint16_t fontColour = colour;
 
 			//calculate width to nearest byte
 			int width = cInfo->width/ 8;
@@ -73,8 +75,8 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = fontColour>>8;
 		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = fontColour;
 		        } else {
-		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = COLOR_BLACK>>8;
-		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = COLOR_BLACK;
+		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = BACKING_COLOUR>>8;
+		        	screen->ILI9341StreamBuf[screen->ILI9341StreamBufIndex++] = BACKING_COLOUR;
 		        }
 
 
@@ -133,9 +135,9 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 						//TODO find better way or checking, also timeout code?
 					}
 					if(cInfo->height > h){
-						ILI9341_Fill_Rect(localStartX + w , localStartY, localStartX + cInfo->width -1, localStartY + cInfo->height -1, COLOR_BLACK);
+						ILI9341_Fill_Rect(localStartX + w , localStartY, localStartX + cInfo->width -1, localStartY + cInfo->height -1, BACKING_COLOUR);
 					} else {
-						ILI9341_Fill_Rect(localStartX + w , localStartY, localStartX + cInfo->width -1, localStartY + h -1, COLOR_BLACK);
+						ILI9341_Fill_Rect(localStartX + w , localStartY, localStartX + cInfo->width -1, localStartY + h -1, BACKING_COLOUR);
 					}
 				}
 				//if there isnt full overlap on the bottom (and a little bit on the corner)l blank it out
@@ -145,9 +147,9 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 						//TODO find better way or checking, also timeout code?
 					}
 					if(cInfo->width > w){
-						ILI9341_Fill_Rect(localStartX, localStartY + h, localStartX + cInfo->width -1, localStartY + cInfo->height -1, COLOR_BLACK);
+						ILI9341_Fill_Rect(localStartX, localStartY + h, localStartX + cInfo->width -1, localStartY + cInfo->height -1, BACKING_COLOUR);
 					} else {
-						ILI9341_Fill_Rect(localStartX, localStartY + h, localStartX + w -1, localStartY + cInfo->height -1, COLOR_BLACK);
+						ILI9341_Fill_Rect(localStartX, localStartY + h, localStartX + w -1, localStartY + cInfo->height -1, BACKING_COLOUR);
 					}
 				}
 			}
@@ -161,7 +163,7 @@ void UGR_ScreenField::update(char *str, uint16_t color) {
 		offset = this->currentString[i] - font.first;
 		cInfo = &(font.glyph[offset]);
 		while(HAL_SPI_GetState(this->screen->spiHandle) != HAL_SPI_STATE_READY);
-		ILI9341_Fill_Rect(localStartX, localStartY, localStartX + cInfo->width -1, localStartY + cInfo->height -1, COLOR_BLACK);
+		ILI9341_Fill_Rect(localStartX, localStartY, localStartX + cInfo->width -1, localStartY + cInfo->height -1, BACKING_COLOUR);
 		localStartX += cInfo->xAdvance;
 		i++;
 	}
