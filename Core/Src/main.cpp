@@ -34,7 +34,7 @@
 #include "FreeSans35pt7b.h"
 #include "FreeMonoBold9pt7b.h"
 #include "FreeSerifBold18pt7b.h"
-#include "image_data.c"
+#include "logo.c"
 
 // Moved the address of the CAN packets to the top of the file
 #define CANADDRESS 0x2000
@@ -283,13 +283,31 @@ void drawGrid(){
 	}
 }
 
-/* Function to display the image at a specific location, primarily used for Logo */
-void display_image(uint32_t xpos, uint32_t ypos, const uint8_t* pixel_data, uint32_t width, uint32_t height) {
-  ILI9341_SetCursorPosition(xpos, ypos, xpos + width - 1, ypos + height - 1);
-  HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-  HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)pixel_data, width * height * 2);  // For RGB565, each pixel is 2 bytes
-  while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+void decompress_rle(const uint8_t* compressed_data, uint16_t* decompressed_data, uint32_t compressed_size) {
+    uint32_t index = 0;
+    uint32_t decompressed_index = 0;
+    while (index < compressed_size) {
+        uint16_t value = (compressed_data[index] << 8) | compressed_data[index + 1];
+        uint16_t count = (compressed_data[index + 2] << 8) | compressed_data[index + 3];
+        for (uint16_t i = 0; i < count; ++i) {
+            decompressed_data[decompressed_index++] = value;
+        }
+        index += 4;
+    }
 }
+
+void display_image(uint32_t xpos, uint32_t ypos) {
+    uint16_t* decompressed_data = (uint16_t*)malloc(image_width * image_height * sizeof(uint16_t));
+    decompress_rle(compressed_data, decompressed_data, sizeof(compressed_data));
+
+    ILI9341_SetCursorPosition(xpos, ypos, xpos + image_width - 1, ypos + image_height - 1);
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+    HAL_SPI_Transmit_DMA(&hspi1, (uint8_t*)decompressed_data, image_width * image_height * 2);  // For RGB565, each pixel is 2 bytes
+    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+
+    free(decompressed_data);
+}
+
 
 /* USER CODE END 0 */
 
@@ -386,17 +404,18 @@ int main(void)
 
   ILI9341_Fill(COLOR_BLACK);
  
-  display_image(190, 140, logo.pixel_data, logo.width, logo.height);
+  display_image(170,150);
 
-  UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "Water Temp", FreeSerifBold18pt7b, &screen);
+
+  UGR_ScreenField waterTempTitleField = UGR_ScreenField(2, 0, "WATER T", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField waterTempField = UGR_ScreenField(10, 40, "", FreeSans35pt7b, &screen);
 
-  UGR_ScreenField cellTempTitleField = UGR_ScreenField(2, 140, "Cell Temp", FreeSerifBold18pt7b, &screen);
+  UGR_ScreenField cellTempTitleField = UGR_ScreenField(2, 140, "CELL T", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField cellTempField = UGR_ScreenField(10, 180, "", FreeSans35pt7b, &screen);
 
-  UGR_ScreenField stateOfChargeTitleField = UGR_ScreenField(190, 0, "State of Charge", FreeSerifBold18pt7b, &screen);
+  UGR_ScreenField stateOfChargeTitleField = UGR_ScreenField(190, 0, "SoC %", FreeSerifBold18pt7b, &screen);
   UGR_ScreenField stateOfChargeField = UGR_ScreenField(195, 40, "", FreeSans35pt7b, &screen);
-
+  stateOfChargeField.setColour(COLOR_WHITE);
 
   int can_mph = 0;
   int can_gear = 0;
@@ -415,7 +434,7 @@ int main(void)
   ecuData.gear = 5;
 
   // New Data
-  ecuData.waterTemp = 95;
+  ecuData.waterTemp = 25;
   ecuData.cellTemp = 45;
   ecuData.stateOfCharge = 85;
 
@@ -427,7 +446,7 @@ int main(void)
     if (ecuData.waterTemp > 50 || ecuData.cellTemp > 60) {
      // shutdown();
     }
-
+    printf("Test");
     // Color Conditionals
     uint16_t waterTempColour = (ecuData.waterTemp < 40) ? COLOR_WHITE : 
                               (ecuData.waterTemp < 45) ? COLOR_ORANGE : 

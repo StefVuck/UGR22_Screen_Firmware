@@ -12,6 +12,7 @@ UGR_ScreenField::UGR_ScreenField(int startx, int starty, char *str, GFXfont font
 	this->starty = starty;
 	this->font	= font;
 	this->screen = screen;
+	this->colour = COLOR_GREEN;
 	this->currentString = (char*)malloc(33); //TODO allow different sizes
 	memset(currentString, '\0', 33);
 	this->update(str);
