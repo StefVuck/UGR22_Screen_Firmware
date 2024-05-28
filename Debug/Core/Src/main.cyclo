@@ -1,0 +1,22 @@
+../Core/Src/S25FL.h:49:11:uint32_t S25FL::getMaxAddress() const	1
+../Core/Src/main.cpp:226:6:void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef*)	1
+../Core/Src/main.cpp:232:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	1
+../Core/Src/main.cpp:238:6:void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef*)	1
+../Core/Src/main.cpp:243:6:void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef*)	2
+../Core/Src/main.cpp:277:6:void drawGrid()	3
+../Core/Src/main.cpp:286:6:void decompress_rle(const uint8_t*, uint16_t*, uint32_t)	3
+../Core/Src/main.cpp:299:6:void display_image(uint32_t, uint32_t)	2
+../Core/Src/S25FL.h:31:7:constexpr S25FL& S25FL::operator=(const S25FL&)	1
+../Core/Src/main.cpp:318:5:int main()	7
+../Core/Src/main.cpp:484:6:void SystemClock_Config()	5
+../Core/Src/main.cpp:563:13:void MX_CAN1_Init()	2
+../Core/Src/main.cpp:600:13:void MX_I2C1_Init()	4
+../Core/Src/main.cpp:646:13:void MX_SPI1_Init()	2
+../Core/Src/main.cpp:686:13:void MX_SPI3_Init()	2
+../Core/Src/main.cpp:726:13:void MX_USART2_UART_Init()	2
+../Core/Src/main.cpp:759:13:void MX_DMA_Init()	1
+../Core/Src/main.cpp:780:13:void MX_GPIO_Init()	1
+../Core/Src/main.cpp:819:6:void Error_Handler()	1
+../Core/Src/main.cpp:825:1:void __static_initialization_and_destruction_0(int, int)	5
+../Core/Src/main.cpp:825:1:cpp)	1
+../Core/Src/main.cpp:825:1:cpp)	1

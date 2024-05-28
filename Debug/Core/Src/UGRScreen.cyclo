@@ -1,0 +1,10 @@
+../Core/Src/UGRScreen.cpp:11:1:UGR_Screen::UGR_Screen(SPI_HandleTypeDef*, GPIO_TypeDef*, uint16_t, GPIO_TypeDef*, uint16_t, GPIO_TypeDef*, uint16_t)	1
+../Core/Src/UGRScreen.cpp:28:1:UGR_Screen::~UGR_Screen()	1
+../Core/Src/UGRScreen.cpp:28:1:virtual UGR_Screen::~UGR_Screen()	1
+../Core/Src/UGRScreen.cpp:32:10:uint16_t UGR_Screen::getCsPin() const	1
+../Core/Src/UGRScreen.cpp:36:21:const GPIO_TypeDef* UGR_Screen::getCsPort() const	1
+../Core/Src/UGRScreen.cpp:40:10:uint16_t UGR_Screen::getDcPin() const	1
+../Core/Src/UGRScreen.cpp:44:21:const GPIO_TypeDef* UGR_Screen::getDcPort() const	1
+../Core/Src/UGRScreen.cpp:48:6:void UGR_Screen::setDataMode()	1
+../Core/Src/UGRScreen.cpp:52:6:bool UGR_Screen::checkSpiReady()	1
+../Core/Src/UGRScreen.cpp:56:21:const GPIO_TypeDef* UGR_Screen::getResetPort() const	1
